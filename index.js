@@ -74,18 +74,10 @@ const generateId = () => {
 
 app.post('/api/persons', (request, response) => {
 
+
     const body = request.body
-    if(body.name === undefined){
-        return response.status(400).json({
-            error: 'name missing'
-        })
-    }
-    if(body.number === undefined){
-        return response.status(400).json({
-            error: 'number missing'
-        })
-    }
-    if(datos.find(dato => dato.name === body.name)){
+
+    if(datos.some(dato => dato.name === body.name)){
         return response.status(400).json({
             error: 'name must be unique'
         })
@@ -100,6 +92,20 @@ app.post('/api/persons', (request, response) => {
     datos = datos.concat(dato)
     response.json(dato)
     
+})
+
+app.put('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const dato = datos.find(dato => dato.id === id)
+ 
+    if(dato){
+        dato.name = request.body.name
+        dato.number = request.body.number
+
+        response.json(dato)
+    } else {
+        response.status(404).end()
+    }
 })
 
 const PORT = process.env.PORT || 3001

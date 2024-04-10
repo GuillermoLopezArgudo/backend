@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
 app.use(express.static('dist'))
 app.use(cors())
 
@@ -33,8 +35,12 @@ let datos = [
       "number": "39-23-6423122"
     }
 ]
+
 app.get('/api/persons', (request, response) => {
-    response.json(datos)   
+    Person.find({}).then(persons => {
+        response.json(persons)   
+    })
+  
 })
 
 app.get('/info', (request, response) => {
@@ -95,20 +101,26 @@ app.post('/api/persons', (request, response) => {
 })
 
 app.put('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const dato = datos.find(dato => dato.id === id)
- 
-    if(dato){
-        dato.name = request.body.name
-        dato.number = request.body.number
+    const body = request.body
 
-        response.json(dato)
-    } else {
-        response.status(404).end()
+    if(body.name === undefined) {
+        return response.status(400).json({ error: 'name missing'})
+    } else  if(body.name === undefined){
+        return response.status(400).json({ error: 'number missing'}) 
     }
+
+    const person = new Person({
+        name: body.name,
+        number: body.number,
+    })
+
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
+
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })

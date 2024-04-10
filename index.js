@@ -89,26 +89,6 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const dato = {
-        id: generateId(),
-        name: body.name,
-        number: body.number,
-    }
-
-    datos = datos.concat(dato)
-    response.json(dato)
-    
-})
-
-app.put('/api/persons/:id', (request, response) => {
-    const body = request.body
-
-    if(body.name === undefined) {
-        return response.status(400).json({ error: 'name missing'})
-    } else  if(body.name === undefined){
-        return response.status(400).json({ error: 'number missing'}) 
-    }
-
     const person = new Person({
         name: body.name,
         number: body.number,
@@ -117,7 +97,21 @@ app.put('/api/persons/:id', (request, response) => {
     person.save().then(savedPerson => {
         response.json(savedPerson)
     })
+    
+})
 
+app.put('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const dato = datos.find(dato => dato.id === id)
+ 
+    if(dato){
+        dato.name = request.body.name
+        dato.number = request.body.number
+
+        response.json(dato)
+    } else {
+        response.status(404).end()
+    }
 })
 
 const PORT = process.env.PORT
